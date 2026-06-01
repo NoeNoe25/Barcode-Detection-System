@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="tessdata\eng.traineddata" />
+		<None Remove="tessdata\hmn.traineddata" />
+		<None Remove="tessdata\hmn2.traineddata" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="tessdata\eng.traineddata">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="tessdata\hmn.traineddata">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="tessdata\hmn2.traineddata">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BlazorBarcodeScanner.ZXing.JS" Version="1.0.4" />
+		<PackageReference Include="Emgu.CV" Version="4.12.0.5764" />
+		<PackageReference Include="Emgu.CV.Bitmap" Version="4.12.0.5764" />
+		<PackageReference Include="Emgu.CV.runtime.windows" Version="4.12.0.5764" />
+		<PackageReference Include="OpenCvSharp4" Version="4.13.0.20260308" />
+		<PackageReference Include="OpenCvSharp4.Extensions" Version="4.13.0.20260308" />
+		<PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260302" />
+		<PackageReference Include="Tesseract" Version="5.2.0" />
+		<PackageReference Include="ZXing.Net" Version="0.16.11" />
+		<PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.14" />
+	</ItemGroup>
+
+</Project>

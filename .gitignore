@@ -1,0 +1,70 @@
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# =========================
+# Build output
+# =========================
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# =========================
+# Build results
+# =========================
+*.dll
+*.exe
+*.pdb
+*.cache
+*.log
+
+# =========================
+# NuGet packages
+# =========================
+*.nupkg
+packages/
+**/packages/*
+
+# If using NuGet PackageReference (modern projects), ignore restore folders
+project.lock.json
+project.assets.json
+
+# =========================
+# Visual Studio Code
+# =========================
+.vscode/
+
+# =========================
+# Windows system files
+# =========================
+Thumbs.db
+Desktop.ini
+
+# =========================
+# Optional: publish output
+# =========================
+publish/
+PublishOutput/
+
+# =========================
+# Secrets / local config
+# =========================
+appsettings.Development.json
+*.config.user
+
+# =========================
+# JetBrains Rider (if ever used)
+# =========================
+.idea/
+
+# =========================
+# Backup files
+# =========================
+*.bak
+*.backup
