@@ -1,99 +1,105 @@
-# Jetson Nano Box Barcode Detection System
+# Jetson Nano Box Label Reader
 
-A computer vision-based Windows Forms application for detecting and reading barcodes (UPC, Serial Number, and Part Number) from NVIDIA Jetson Nano packaging boxes.
+A Windows desktop app that reads the **serial number** and **part number** printed under the barcodes on NVIDIA Jetson Nano packaging. It combines OpenCV image processing with Tesseract OCR, and was designed to cope with rotated, blurred and zoomed-out photos of the box label.
 
-The system is designed to handle different conditions such as:
-- Zoomed-in and zoomed-out images
-- Partial visibility of barcodes
-- Detection failures due to lighting or blur
-- Multiple barcode types on a single package
+![CV + OCR result](screenshots/detected_box.png)
 
----
+## Problem
 
-##  Features
+Product boxes carry their identifiers as barcodes with human-readable text underneath. Typing these numbers by hand during inventory or receiving is slow and error-prone, and photos taken quickly are often rotated, blurred or taken from too far away.
 
-- Real-time barcode detection using computer vision
-- Extraction of:
-  - UPC code
-  - Serial number
-  - Part number
-- Works with camera input or static images
-- Handles zoom variations and partial detection cases
-- Displays detection confidence and bounding boxes
-- Windows Forms UI for user interaction
+## Features
 
----
+- Load a photo of the box label
+- Two processing modes for comparison:
+  - **Direct OCR:** Tesseract on the whole image
+  - **CV + OCR:** deskew the image, locate text and barcode regions, then OCR each region separately
+- Draws a box around every detected region
+- Extracts the **serial number** (13–15 digits) and **part number** (pattern `NNN-NNNNN-NNNN-NNN`) into separate fields
+- Detects the "UPC" label
+- Shows processing time for each run
 
-##  Computer Vision Approach
+## How the CV + OCR pipeline works
 
-- Image preprocessing (grayscale, blur reduction, thresholding)
-- Barcode region detection
-- Feature extraction for decoding
-- Handling edge cases:
-  - low-resolution input
-  - zoomed-out objects
-  - partially visible barcodes
+```mermaid
+flowchart LR
+    A[Input image] --> B[Deskew<br/>Canny + Hough lines]
+    B --> C[Grayscale + Gaussian blur]
+    C --> D[Adaptive threshold]
+    D --> E[Morphological close<br/>25×5 kernel]
+    E --> F[External contours<br/>keep > 40×15 px]
+    F --> G[Tesseract OCR<br/>per region]
+    G --> H[Regex field extraction]
+```
 
----
+1. **Deskew:** the strongest Hough line gives the label's angle, and the image is rotated to straighten it.
+2. **Region detection:** adaptive thresholding and a wide, flat morphological closing merge characters and barcode bars into blocks, which are found as contours.
+3. **OCR:** each region is cropped and read with Tesseract using the custom `hmn2` model in `tessdata/`.
+4. **Field extraction:** regular expressions pick out the serial and part numbers from the combined text.
 
-##  Technologies Used
+## Results
 
-- C#
-- Windows Forms (.NET Framework)
-- OpenCV (or EmguCV if used)
-- Barcode decoding library (custom model)
-- Computer Vision techniques
+Screenshots of real runs are in [`screenshots/`](screenshots):
 
----
+| Case | Serial | Part number | Time |
+| --- | --- | --- | --- |
+| [Close-up](screenshots/detected_box.png) | ✅ | ✅ | 510 ms |
+| [Rotated label](screenshots/rotate_image.png) | ✅ | ✅ | 267 ms |
+| [Blurred image](screenshots/Blur_image.png) | ✅ | ✅ | 277 ms |
+| [Zoomed out (small label)](screenshots/failstate.png) | extracted, not verified | ❌ | 567 ms |
 
-##  Results
+These are individual examples, not an accuracy benchmark.
 
-###  Successful Detection
-![Detected](screenshots/detected-box.png)
+## Tech stack
 
-###  Zoomed-out Case
-![Zoom Out](screenshots/zoom-out-case.png)
+- C# / .NET 8, Windows Forms
+- [OpenCvSharp4](https://github.com/shimat/opencvsharp) for image processing
+- [Tesseract](https://github.com/charlesw/tesseract) 5.2 .NET wrapper with custom trained data
 
-###  Failure / Undetected Case
-![Failure](screenshots/failure-case.png)
+## Project structure
 
----
+```
+Barcode-Detection-System/
+├── WinFormsApp1.sln
+├── WinFormsApp1/
+│   ├── Form1.cs            # Image loading, OCR modes, CV pipeline, field extraction
+│   ├── Form1.Designer.cs   # UI layout
+│   ├── Program.cs
+│   ├── WinFormsApp1.csproj
+│   └── tessdata/           # Tesseract models: eng, hmn, hmn2 (used)
+└── screenshots/
+```
 
-##  System Workflow
+## Getting started
 
-1. Capture image from camera / input file  
-2. Preprocess image (filtering, enhancement)  
-3. Detect barcode regions  
-4. Decode barcode data  
-5. Classify output (UPC / Serial / Part Number)  
-6. Display results in UI  
+Requirements: Windows, [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (or Visual Studio 2022).
 
----
+```bash
+git clone https://github.com/NoeNoe25/Barcode-Detection-System.git
+cd Barcode-Detection-System
+dotnet run --project WinFormsApp1
+```
 
-##  Limitations
+Click **Upload** to choose an image, then **Direct OCR** or **CV + OCR**.
 
-- Very small barcodes may not be detected
-- Lighting conditions affect accuracy
+## Limitations
 
----
+- The app reads the printed text, not the barcode bars, so the UPC field only shows that a UPC label was found, not its number.
+- Small or distant labels lose detail, and the part number is often missed.
+- Deskewing uses a single Hough line, so strong edges from the box itself can produce the wrong angle.
+- Works on still images only. There is no camera input.
 
-##  Future Improvements
+## Future improvements
 
-- Deep learning-based barcode detection
-- Real-time edge deployment optimization
-- Multi-camera support
-- Integration with inventory tracking system
-
----
+- Decode the barcodes directly (for example with ZXing.Net) and cross-check them against the OCR text
+- Upscale small regions before OCR
+- Add live camera capture
+- Evaluate on a labelled set of box photos and report accuracy
 
 ## Author
 
-Hsu Myat Noe  
-Robotics & AI Engineering Student  
-King Mongkut’s Institute of Technology Ladkrabang
+**Hsu Myat Noe** · Robotics & AI Engineering, KMITL · [GitHub](https://github.com/NoeNoe25) · [LinkedIn](https://www.linkedin.com/in/hsu-myat-noe569aa729a/)
 
----
+## License
 
-##  License
-
-MIT License
+[MIT](LICENSE)
